@@ -31,23 +31,23 @@ macro write fd, buf, count
 macro close fd
 {
     mov     rax, SYS_close
-    mov     rdi, fd
+    mov     edi, fd
     syscall
 }
-
+; int socket(int domain, int type, int protocol);
 macro socket domain, type, protocol
 {
     mov     rax, SYS_socket
-    mov     rdi, domain
-    mov     rsi, type
-    mov     rdx, protocol
+    mov     edi, domain
+    mov     esi, type
+    mov     edx, protocol
     syscall
 }
 
 macro connect fd, addr, addrlen
 {
     mov     rax, SYS_connect
-    mov     rdi, fd
+    mov     edi, fd
     mov     rsi, addr
     mov     rdx, addrlen
     syscall
@@ -56,7 +56,7 @@ macro connect fd, addr, addrlen
 macro accept sockfd, addr, addrlen
 {
     mov     rax, SYS_accept
-    mov     rdi, sockfd
+    mov     edi, sockfd
     mov     rsi, addr
     mov     rdx, addrlen
     syscall
@@ -65,7 +65,7 @@ macro accept sockfd, addr, addrlen
 macro bind sockfd, addr, addrlen
 {
     mov     rax, SYS_bind
-    mov     rdi, sockfd
+    mov     edi, sockfd
     mov     rsi, addr
     mov     rdx, addrlen
     syscall
@@ -74,7 +74,7 @@ macro bind sockfd, addr, addrlen
 macro listen sockfd, backlog
 {
     mov     rax, SYS_listen
-    mov     rdi, sockfd
+    mov     edi, sockfd
     mov     rsi, backlog
     syscall
 }

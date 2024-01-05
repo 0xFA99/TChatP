@@ -2,6 +2,7 @@ format ELF64 executable
 
 include "syscall.inc"
 include "string.inc"
+include "inet.inc"
 include "utils.inc"
 
 MAX_CONN    equ 10
@@ -12,20 +13,24 @@ entry main
 main:
     ; Creating Socket
     socket AF_INET, SOCK_STREAM, 0
-    cmp     rax, 0
+    cmp     eax, 0
     jl      .error
-    mov     [sockfd], rax
+
+    mov     dword [sockfd], eax
 
     mov     rdi, STDOUT
     mov     rsi, createSocket
     call    write_cstr
 
-    mov     word [servaddr.sin_family], AF_INET
-    mov     dword [servaddr.sin_addr], INADDR_ANY
-    mov     word [servaddr.sin_port], 14619
+    mov     word    [servaddr.sin_family], AF_INET
+    mov     dword   [servaddr.sin_addr], INADDR_ANY
+
+    mov     rdi, port
+    call    htons
+    mov     word    [servaddr.sin_port], ax
 
     ; Binding Socket
-    bind    [sockfd], servaddr.sin_family, servaddrLen
+    bind    dword [sockfd], servaddr.sin_family, servaddrLen
     cmp     rax, 0
     jl      .error
 
@@ -38,7 +43,7 @@ main:
     mov     rsi, listeningSocket
     call    write_cstr
 
-    listen  [sockfd], MAX_CONN
+    listen  dword [sockfd], MAX_CONN
     cmp     rax, 0
     jl      .error
 
@@ -47,15 +52,15 @@ main:
     cmp     rax, 0
     jl      .error
 
-    mov     [connfd], rax
+    mov     dword [connfd], eax
 
     ; Send Greeting Message to Client
-    mov     rdi, [connfd]
+    mov     edi, dword [connfd]
     mov     rsi, greetingMsg
     call    write_cstr
 
-    close   [connfd]
-    close   [sockfd]
+    close   dword [connfd]
+    close   dword [sockfd]
 
     exit    EXIT_SUCCESS
 
@@ -64,15 +69,17 @@ main:
     mov     rsi, serverErrorMsg
     call    write_cstr
 
-    close   [connfd]
-    close   [sockfd]
+    close   dword [connfd]
+    close   dword [sockfd]
 
     exit    EXIT_FAILURE
 
 segment writeable readable
 
-sockfd  dq -1
-connfd  dq -1
+port    dw 6969
+
+sockfd  dd -1
+connfd  dd -1
 
 struc sockaddr_in
 {

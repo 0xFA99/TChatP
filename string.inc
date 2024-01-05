@@ -1,6 +1,6 @@
-; rdi = buf
+; size_t strlen(const char *s);
 strlen:
-    xor     eax, eax
+    xor     rax, rax
 
 .next_digit:
     cmp     byte [rdi], 0

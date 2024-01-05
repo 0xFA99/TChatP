@@ -2,6 +2,7 @@ format ELF64 executable
 
 include "syscall.inc"
 include "string.inc"
+include "inet.inc"
 include "utils.inc"
 
 segment writeable executable
@@ -13,7 +14,7 @@ main:
     cmp     rax, 0
     jl      .error
 
-    mov     [sockfd], rax
+    mov     dword [sockfd], eax
 
     mov     rdi, STDOUT
     mov     rsi, createSocket
@@ -21,9 +22,12 @@ main:
 
     mov     word [cliaddr.sin_family], AF_INET
     mov     dword [cliaddr.sin_addr], INADDR_ANY
-    mov     word [cliaddr.sin_port], 14619
 
-    connect [sockfd], cliaddr, cliaddrLen
+    mov     rdi, port
+    call    htons
+    mov     word [cliaddr.sin_port], ax
+
+    connect dword [sockfd], cliaddr, cliaddrLen
     cmp     rax, 0
     jl      .error
 
@@ -31,7 +35,7 @@ main:
     mov     rsi, connectSocket
     call    write_cstr
 
-    close   [sockfd]
+    close   dword [sockfd]
     exit    EXIT_SUCCESS
 
 .error:
@@ -39,11 +43,12 @@ main:
     mov     rsi, clientErrorMsg
     call    write_cstr
 
-    close   [sockfd]
+    close   dword [sockfd]
     exit    EXIT_FAILURE
 
 segment writeable readable
 
+port    dw 6969
 sockfd  dq 0
 
 struc sockaddr_in
